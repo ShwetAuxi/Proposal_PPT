@@ -23,27 +23,35 @@ def interactiveUI():
         # pass in variables into chat gpt to create 
         # paragraphs for title of presentation, executive
         # summary and Agenda outline
-    prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
+prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
 
-    promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks"
+promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks"
 
-    promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation"
+promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation"
 
-    promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation"
+promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation"
 
-    titlePres = openai.Completion.create(prompt=promptPres, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
-    execSummary = openai.Completion.create(prompt=promptExecSummary, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
-    agenda = openai.Completion.create(prompt=promptAgenda, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
+titlePres = openai.Completion.create(prompt=promptPres, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
+execSummary = openai.Completion.create(prompt=promptExecSummary, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
+agenda = openai.Completion.create(prompt=promptAgenda, model='text-davinci-003', temperature=0.5, max_tokens=100)['choices'][0]['text']
     
     # with the provided text, we can now create a slides with the title presentation, executive summary, and agenda
 
-SLD_LAYOUT_TITLE_AND_CONTENT = 1
 
-prs = Presentation()
-slide_layout = prs.slide_layouts[SLD_LAYOUT_TITLE_AND_CONTENT]
-slide = prs.slides.add_slide(slide_layout)
+print(titlePres)
+print(execSummary)
+print(agenda)
+userSatisfaction = input("\n User, are you satisfied with the initial template? Y/N")
+
+if userSatisfaction == "Y":
+    SLD_LAYOUT_TITLE_AND_CONTENT = 1
+
+    prs = Presentation()
+    slide_layout = prs.slide_layouts[SLD_LAYOUT_TITLE_AND_CONTENT]
+    slide = prs.slides.add_slide(slide_layout)
 
 
 
 
-prs.save("userui.pptx")
+    prs.save("userui.pptx")
+
