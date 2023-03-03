@@ -18,3 +18,7 @@ docker build -t my_image .
 docker run -p 5000:5000 my_image
 ```
 Then visit localhost:5000/ to access the webapp.
+
+TODO:
+- Figure out how to run on Azure
+- Figure out how to shut down webapp when running in container
