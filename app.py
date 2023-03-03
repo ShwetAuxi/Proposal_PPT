@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, send_file
 
 import openai
 from pptx import Presentation
@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
-    return render_template("index.html", title="Hello")
+    # return render_template("index.html", title="Hello")
+    return redirect(url_for("interactiveUI"))
 
 
 def generate(docType, clientType, firmType):
@@ -45,12 +46,13 @@ def results_page():
             titlePres = session["titlePres"]
             execSummary = session["execSummary"]
             agenda = session["agenda"]
-            #TODO: render results page
+            return render_template("results_page.html", titlePres=titlePres, execSummary=execSummary, agenda=agenda)
         else:
             #TODO: how did we get here?
+            return "SESSION DATA INVALID"
     elif request.method == "POST":
         #TODO: handle request from form
-        userSatisfaction = input("\n User, are you satisfied with the initial template? Y/N")
+        userSatisfaction = request.form["userSatisfaction"]
 
         if userSatisfaction.lower() == "y":
             SLD_LAYOUT_TITLE_AND_CONTENT = 1
@@ -64,6 +66,9 @@ def results_page():
             slide.add_paragraph("Whatever you want to say here.")
 
             prs.save("userui.pptx")
+            return send_file('userui.pptx')
+        else:
+            return redirect(url_for("intereactiveUI"))
 
 
 @app.route("/form", methods=["GET", "POST"])

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Document Generation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <form method="post">
@@ -15,7 +16,7 @@
         User, who is the client?<br>
         <input name="clientType"><br>
         <br>
-        User, who is the client?<br>
+        User, who is the firm?<br>
         <input name="firmType"><br>
         <br>
         <button type="submit">Submit</button>
