@@ -1,7 +1,7 @@
 To run this application:
 
 ```
-venv\\Script\\activate
+venv\Script\activate
 flask --debug run
 ```
 
