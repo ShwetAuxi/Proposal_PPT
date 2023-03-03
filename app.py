@@ -1,12 +1,15 @@
+import os
+
 from flask import Flask, render_template, request, session, redirect, url_for, send_file
 
 import openai
 from pptx import Presentation
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 app = Flask(__name__)
 
+app.config.update(SECRET_KEY=os.urandom(12))
 
 @app.route("/")
 def hello_world():
@@ -17,11 +20,11 @@ def hello_world():
 def generate(docType, clientType, firmType):
     prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
 
-    promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks"
+    promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
 
-    promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation"
+    promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation:"
 
-    promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation"
+    promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation:"
 
     session["titlePres"] = \
         openai.Completion.create(prompt=promptPres, model='text-davinci-003', temperature=0.5, max_tokens=100)[
@@ -63,12 +66,13 @@ def results_page():
 
             title_placeholder = slide.shapes.title
             title_placeholder.text = 'Agenda Example'
-            slide.add_paragraph("Whatever you want to say here.")
+            #TODO: fix the following line!!!
+            # slide.add_paragraph("Whatever you want to say here.")
 
-            prs.save("userui.pptx")
-            return send_file('userui.pptx')
+            prs.save("generated_template.pptx")
+            return send_file('generated_template.pptx')
         else:
-            return redirect(url_for("intereactiveUI"))
+            return redirect(url_for("interactiveUI"))
 
 
 @app.route("/form", methods=["GET", "POST"])
@@ -87,3 +91,13 @@ def interactiveUI():
         return generate(docType, clientType, firmType)
     else:
         return "INVALID REQUEST"
+
+@app.route("/shutdown")
+def shutdown():
+    # this doesn't work...
+    print('shutdown')
+    raise RuntimeError("shutdown")
+
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host=('0.0.0.0'), port=port)
