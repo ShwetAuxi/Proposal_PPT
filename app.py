@@ -17,6 +17,12 @@ bootstrap = Bootstrap5(app)
 
 app.config.update(SECRET_KEY=os.urandom(12))
 
+MODEL = "pt-3.5-turbo"
+
+TEMP = 0.5
+
+MAX_TOKENS = 100
+
 
 @app.route("/")
 def hello_world():
@@ -25,26 +31,29 @@ def hello_world():
 
 
 def generate(docType, clientType, firmType, subject=None):
-    prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
+    try:
+        prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
 
-    promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
+        promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
 
-    promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation:"
+        promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation:"
 
-    promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation:"
+        promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation:"
 
-    session["titlePres"] = \
-        openai.Completion.create(prompt=promptPres, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][
-            0]['text']
-    session["execSummary"] = \
-        openai.Completion.create(prompt=promptExecSummary, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][0]['text']
-    session["agenda"] = \
-        openai.Completion.create(prompt=promptAgenda, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][
-            0]['text']
-    return redirect(url_for("results_page"))
+        session["titlePres"] = \
+            openai.Completion.create(prompt=promptPres, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][
+                0]['text']
+        session["execSummary"] = \
+            openai.Completion.create(prompt=promptExecSummary, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][0]['text']
+        session["agenda"] = \
+            openai.Completion.create(prompt=promptAgenda, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][
+                0]['text']
+        return redirect(url_for("results_page"))
+    except openai.error.AuthenticationError as e:
+        return "OPENAI AUTH KEY ERROR"
     # with the provided text, we can now create a slides with the title presentation, executive summary, and agenda
 
 
