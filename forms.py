@@ -9,6 +9,8 @@ class GenerationForm(FlaskForm):
     client_type = StringField('Client:', validators=[validators.input_required()])
     firm_type = StringField('Firm:', validators=[validators.input_required()])
     subject = StringField('What is the proposal about?', validators=[validators.input_required()])
+    model = RadioField('Select a model:',
+                       choices=[('davicni', 'Davinci'), ('gpt3.5', 'ChatGPT')])
     submit = SubmitField()
 
 class ResultsForm(FlaskForm):
