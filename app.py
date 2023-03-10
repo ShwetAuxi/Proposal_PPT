@@ -1,23 +1,38 @@
 import os
 
-from flask import Flask, render_template, request, session, redirect, url_for, send_file
-
+from flask import Flask, render_template, request, session, redirect, url_for, send_file, flash
+from flask_bootstrap import Bootstrap4
+from flask_wtf import FlaskForm
 import openai
 from pptx import Presentation
+from wtforms import Form, RadioField, StringField, SubmitField, validators
+from wtforms.csrf.session import SessionCSRF
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 app = Flask(__name__)
 
+bootstrap = Bootstrap4(app)
+
 app.config.update(SECRET_KEY=os.urandom(12))
+
+class GenerationForm(FlaskForm):
+    doc_type = RadioField('Document Type:',
+                          choices=[('proposal', 'Proposal Powerpoint'),
+                                   ('other', 'Other Type (Not Yet Implemented)')])
+    client_type = StringField('Client:', validators=[validators.input_required()])
+    firm_type = StringField('Firm:', validators=[validators.input_required()])
+    subject = StringField('What is the proposal about?', validators=[validators.input_required()])
+    submit = SubmitField()
+
 
 @app.route("/")
 def hello_world():
     # return render_template("index.html", title="Hello")
-    return redirect(url_for("interactiveUI"))
+    return redirect(url_for("formPage"))
 
 
-def generate(docType, clientType, firmType):
+def generate(docType, clientType, firmType, subject=None):
     prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
 
     promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
@@ -51,10 +66,10 @@ def results_page():
             agenda = session["agenda"]
             return render_template("results_page.html", titlePres=titlePres, execSummary=execSummary, agenda=agenda)
         else:
-            #TODO: how did we get here?
+            # TODO: how did we get here?
             return "SESSION DATA INVALID"
     elif request.method == "POST":
-        #TODO: handle request from form
+        # TODO: handle request from form
         userSatisfaction = request.form["userSatisfaction"]
 
         if userSatisfaction.lower() == "y":
@@ -66,17 +81,28 @@ def results_page():
 
             title_placeholder = slide.shapes.title
             title_placeholder.text = 'Agenda Example'
-            #TODO: fix the following line!!!
+            # TODO: fix the following line!!!
             # slide.add_paragraph("Whatever you want to say here.")
 
             prs.save("generated_template.pptx")
             return send_file('generated_template.pptx')
         else:
-            return redirect(url_for("interactiveUI"))
+            return redirect(url_for("formPage"))
 
 
 @app.route("/form", methods=["GET", "POST"])
+def formPage():
+    form = GenerationForm(request.form)
+    if request.method == "POST" and form.validate():
+        return generate(form.doc_type.data, form.client_type.data, form.firm_type.data, form.subject.data)
+    elif request.method == "POST":
+        flash('PLEASE FILL IN ALL FIELDS')
+    return render_template('presentation_form_template.html', form=form)
+
+
+@app.route("/form_old", methods=["GET", "POST"])
 def interactiveUI():
+    """Old UI using hardcoded html form. Consider this deprecated."""
     if request.method == "GET":
         # we should have the options in the form be sent to the template instead of hard coded, but we can do that later
         return render_template("presentation_form.html")
@@ -92,11 +118,13 @@ def interactiveUI():
     else:
         return "INVALID REQUEST"
 
+
 @app.route("/shutdown")
 def shutdown():
     # this doesn't work...
     print('shutdown')
     raise RuntimeError("shutdown")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))

@@ -1,4 +1,4 @@
-/* Credit to https://perfectmotherfuckingwebsite.com */
+/* Credit to https://perfectmotherfuckingwebsite.com for the basis of this file*/
 body {
  max-width:650px;
  margin:40px auto;
@@ -22,4 +22,11 @@ h3 {
  a:visited {
   color:#8e96f0
  }
+}
+
+.center{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
 }

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block title %}Document Generation{% endblock %}
+
+{% block content %}
+    <img src="{{ url_for('static', filename='auxi_logo.png') }}", alt="[auxi.ai]", class="center">
+    {{ form.csrf_token }}
+    {{ render_form(form) }}
+{% endblock %}
