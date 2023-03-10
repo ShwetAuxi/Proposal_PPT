@@ -3,3 +3,4 @@ openai~=0.27.0
 python-pptx
 Flask-WTF
 bootstrap-flask
+WTForms~=3.0.1

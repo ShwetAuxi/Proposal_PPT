@@ -1,10 +1,5 @@
 {% extends 'base.html' %}
-{% from 'bootstrap4/form.html' import render_form %}
-
-{% block styles %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-{% endblock %}
+{% from 'bootstrap5/form.html' import render_form %}
 
 {% block title %}Document Generation{% endblock %}
 
@@ -12,4 +7,5 @@
     <img src="{{ url_for('static', filename='auxi_logo.png') }}", alt="[auxi.ai]", class="center">
     {{ form.csrf_token }}
     {{ render_form(form) }}
+    <p>Please wait a few seconds for processing!</p>
 {% endblock %}

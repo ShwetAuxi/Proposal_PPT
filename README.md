@@ -1,3 +1,5 @@
+Important: make sure to put in your openai key when testing!
+
 To run this application:
 
 ```

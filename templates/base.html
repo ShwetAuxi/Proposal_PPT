@@ -9,6 +9,7 @@
         {% block styles %}
             <!-- Bootstrap CSS -->
             {{ bootstrap.load_css() }}
+            <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         {% endblock %}
         <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='auxi_logo.png') }}">
         <title>{% block title %}{% endblock %}</title>

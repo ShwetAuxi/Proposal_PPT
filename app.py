@@ -1,29 +1,21 @@
 import os
 
 from flask import Flask, render_template, request, session, redirect, url_for, send_file, flash
-from flask_bootstrap import Bootstrap4
-from flask_wtf import FlaskForm
+from flask_bootstrap import Bootstrap5
+
 import openai
 from pptx import Presentation
-from wtforms import Form, RadioField, StringField, SubmitField, validators
-from wtforms.csrf.session import SessionCSRF
 
-openai.api_key = "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"
+from forms import ResultsForm, GenerationForm
+
+# insert your openai key here. Don't upload your key to GitHub or it'll get revoked!
+openai.api_key = "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"
 
 app = Flask(__name__)
 
-bootstrap = Bootstrap4(app)
+bootstrap = Bootstrap5(app)
 
 app.config.update(SECRET_KEY=os.urandom(12))
-
-class GenerationForm(FlaskForm):
-    doc_type = RadioField('Document Type:',
-                          choices=[('proposal', 'Proposal Powerpoint'),
-                                   ('other', 'Other Type (Not Yet Implemented)')])
-    client_type = StringField('Client:', validators=[validators.input_required()])
-    firm_type = StringField('Firm:', validators=[validators.input_required()])
-    subject = StringField('What is the proposal about?', validators=[validators.input_required()])
-    submit = SubmitField()
 
 
 @app.route("/")
@@ -58,19 +50,25 @@ def generate(docType, clientType, firmType, subject=None):
 
 @app.route("/results_page", methods=["GET", "POST"])
 def results_page():
+    form = ResultsForm(request.form)
     if request.method == "GET":
         # there's a better way to do this... but that's for later.
         if "titlePres" in session and "execSummary" in session and "agenda" in session:
             titlePres = session["titlePres"]
             execSummary = session["execSummary"]
             agenda = session["agenda"]
-            return render_template("results_page.html", titlePres=titlePres, execSummary=execSummary, agenda=agenda)
+            return render_template("results_page.html",
+                                   titlePres=titlePres,
+                                   execSummary=execSummary,
+                                   agenda=agenda,
+                                   form=form)
         else:
             # TODO: how did we get here?
             return "SESSION DATA INVALID"
     elif request.method == "POST":
         # TODO: handle request from form
-        userSatisfaction = request.form["userSatisfaction"]
+        # userSatisfaction = request.form["userSatisfaction"] old ver
+        userSatisfaction = form.user_satisfaction.data
 
         if userSatisfaction.lower() == "y":
             SLD_LAYOUT_TITLE_AND_CONTENT = 1
@@ -97,7 +95,7 @@ def formPage():
         return generate(form.doc_type.data, form.client_type.data, form.firm_type.data, form.subject.data)
     elif request.method == "POST":
         flash('PLEASE FILL IN ALL FIELDS')
-    return render_template('presentation_form_template.html', form=form)
+    return render_template('presentation_form_page.html', form=form)
 
 
 @app.route("/form_old", methods=["GET", "POST"])
@@ -105,7 +103,7 @@ def interactiveUI():
     """Old UI using hardcoded html form. Consider this deprecated."""
     if request.method == "GET":
         # we should have the options in the form be sent to the template instead of hard coded, but we can do that later
-        return render_template("presentation_form.html")
+        return render_template("presentation_form_old.html")
     elif request.method == "POST":
         docType = request.form["docType"]
         clientType = request.form["clientType"]
