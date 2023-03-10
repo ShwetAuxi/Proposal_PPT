@@ -9,7 +9,7 @@ from pptx import Presentation
 from forms import ResultsForm, GenerationForm
 
 # insert your openai key here. Don't upload your key to GitHub or it'll get revoked!
-openai.api_key = "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"
+openai.api_key = ""
 
 app = Flask(__name__)
 
