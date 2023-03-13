@@ -7,9 +7,13 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Pt
 from pptx.util import Inches
 
-openai.api_key = "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"
-app = Flask(__name__)
+from forms import ResultsForm, GenerationForm
 
+# insert your openai key here. Don't upload your key to GitHub or it'll get revoked!
+openai.api_key = "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"
+
+app = Flask(__name__)
+bootstrap = Boostrap5(app)
 app.config.update(SECRET_KEY=os.urandom(12))
 
 @app.route("/")
@@ -18,39 +22,50 @@ def hello_world():
     return redirect(url_for("interactiveUI"))
 
 
-def generate(docType, clientType, firmType):
-    prompt = "Document Type: " + docType + "Client Type: " + clientType + "Firm Type: " + firmType
+CHAT_MODEL = "gpt-3.5-turbo"
 
-    promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
+MODEL = "text-davinci-003"
 
-    promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation:"
+TEMP = 0.5
 
-    promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation:"
+MAX_TOKENS = 100
 
-    promptPoV = prompt + "Given this context, generate an point of view content for my presentation:"
 
-    promptmaras = prompt + "Given this context, generate few points on market assessment (current job market for the product and how my competitors are doing) for my proposal presentation:"
+# @app.route("/")
+# def hello_world():
+#     # return render_template("index.html", title="Hello")
+#     return redirect(url_for("formPage"))
 
-    session["titlePres"] = \
-        openai.Completion.create(prompt=promptPres, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][
-            0]['text']
-    session["execSummary"] = \
-        openai.Completion.create(prompt=promptExecSummary, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][0]['text']
-    session["agenda"] = \
-        openai.Completion.create(prompt=promptAgenda, model='text-davinci-003', temperature=0.5, max_tokens=100)[
-            'choices'][
-            0]['text']
-    session["pov"] = \
-        openai.Completion.create(prompt=promptPoV, model='text-davinci-003', temperature=0.5, max_tokens=200)[
-            'choices'][
-            0]['text']
-    session["maras"] = \
-        openai.Completion.create(prompt=promptmaras, model='text-davinci-003', temperature=0.6, max_tokens=500)[
-            'choices'][
-            0]['text']
-    return redirect(url_for("results_page"))
+
+def generate_chat(docType, clientType, firmType, subject):
+    ...
+
+
+def generate(docType, clientType, firmType, subject=None):
+    try:
+        prompt = "Document Type: " + docType + "Client: " + clientType + "Firm: " + firmType + '\n'
+
+        promptPres = prompt + "Given this context, generate a title for my presentation. No quotation marks:"
+
+        promptExecSummary = prompt + "Given this context, generate an executive summary for my presentation:"
+
+        promptAgenda = prompt + "Given this context, generate an agenda outline for my presentation:"
+
+        session["titlePres"] = \
+            openai.ChatCompletion.create(prompt=promptPres, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][
+                0]['text']
+        session["execSummary"] = \
+            openai.ChatCompletion.create(prompt=promptExecSummary, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][0]['text']
+        session["agenda"] = \
+            openai.ChatCompletion.create(prompt=promptAgenda, model=MODEL, temperature=TEMP, max_tokens=MAX_TOKENS)[
+                'choices'][
+                0]['text']
+        return redirect(url_for("results_page"))
+    except openai.error.AuthenticationError as e:
+        flash("OPENAI AUTH KEY EXPIRED")
+        return redirect(url_for('hello_world'))
     # with the provided text, we can now create a slides with the title presentation, executive summary, and agenda
 
 @app.route("/results_page", methods=["GET", "POST"])
@@ -197,6 +212,20 @@ def user_pref():
         return render_template("user_pref.html")    
 
 @app.route("/form", methods=["GET", "POST"])
+def formPage():
+    form = GenerationForm(request.form)
+    if request.method == "POST" and form.validate():
+        if form.model.data == 'davinci':
+            return generate(form.doc_type.data, form.client_type.data, form.firm_type.data, form.subject.data)
+        elif form.model.data == 'gpt3.5':
+            return generate_chat(form.doc_type.data, form.client_type.data, form.firm_type.data, form.subject.data)
+        else:
+            flash('INVALID CHOICE')
+            return redirect(url_for('formPage'))
+    return render_template('presentation_form_page.html', form=form)
+
+
+@app.route("/form_old", methods=["GET", "POST"])
 def interactiveUI():
     if request.method == "GET":
         # we should have the options in the form be sent to the template instead of hard coded, but we can do that later
